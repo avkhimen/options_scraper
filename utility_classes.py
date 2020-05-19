@@ -187,21 +187,22 @@ class UnderpricedStocksStrategy(Strategy):
 		f.close()
 
 class UnderpricedOptionsStrategy():
-	def __init__(self, company, market):
+	def __init__(self, company, market, threshold):
 		self.company = company
 		self.options_dict = self.company.get_options_dict()
 		self.call_options = self.options_dict[0]
 		self.put_options = self.options_dict[1]
 		self.market = market
+		self.threshold = threshold
 		self.document_name = str(self.market) + '_underpriced_options.txt'
 
-	def test(self):
+	def execute_strategy(self):
 		for expiry in self.call_options:
 			for strike in self.call_options[expiry]:
 				call_ratio = float(self.call_options[expiry][strike][0]['ask']) / (float(self.call_options[expiry][strike][0]['ask']) + float(strike))
 				put_ratio = float(self.put_options[expiry][strike][0]['ask']) / (float(self.put_options[expiry][strike][0]['ask']) + float(strike))
 				total_ratio = call_ratio + put_ratio
-				if 0 < total_ratio <= 0.03:
+				if 0 < total_ratio <= threshold:
 					description = self.call_options[expiry][strike][0]['description']
 					latest_price = self.company.get_latest_price()
 					call_price = float(self.call_options[expiry][strike][0]['ask'])
@@ -213,38 +214,79 @@ class UnderpricedOptionsStrategy():
 					self.create_option_record(description, latest_price, call_price, put_price, call_theoretical_vol, \
 						call_theoretical_price, put_theoretical_vol, put_theoretical_price, total_ratio)
 
+	def create_option_record(self, description, latest_price, call_price, put_price, \
+		call_theoretical_vol, call_theoretical_price, put_theoretical_vol, put_theoretical_price, total_ratio):
+		"""Opens the document and werites info"""
+		f = open(self.document_name, "a+")
+		f.write("{} | {} | {} | {} | {} | {} | {} | {} | {} | {}\r".format(self.company.symbol, description, latest_price, \
+			call_price, put_price, call_theoretical_vol, call_theoretical_price, put_theoretical_vol, put_theoretical_price, total_ratio))
+		print("#####################################################Created record for {}".format(self.company.symbol, description))
+		f.close()
+
+class UnderpricedCallOptionsStrategy():
+	def __init__(self, company, market, threshold):
+		self.company = company
+		self.options_dict = self.company.get_options_dict()
+		self.call_options = self.options_dict[0]
+		#self.put_options = self.options_dict[1]
+		self.market = market
+		self.threshold = threshold
+		self.document_name = str(self.market) + '_underpriced_call_options.txt'
+
 	def execute_strategy(self):
-		"""
-		This strategy tests:
-		1) Is the company market cap a mid-cap
-		2) Is the company at least 50% down from january high
-		3) Is the company target at least 20% below analyst target
-		"""
-		if (self.is_market_cap_mid_size() and \
-			self.is_price_at_least_X_percent_down() and \
-			self.is_company_target_at_least_X_percent_higher()):
-			self.create_record()
+		for expiry in self.call_options:
+			for strike in self.call_options[expiry]:
+				call_ratio = float(self.call_options[expiry][strike][0]['ask']) / (float(self.call_options[expiry][strike][0]['ask']) + float(strike))
+				#put_ratio = float(self.put_options[expiry][strike][0]['ask']) / (float(self.put_options[expiry][strike][0]['ask']) + float(strike))
+				total_ratio = call_ratio# + put_ratio
+				if 0 < total_ratio <= threshold:
+					description = self.call_options[expiry][strike][0]['description']
+					latest_price = self.company.get_latest_price()
+					call_price = float(self.call_options[expiry][strike][0]['ask'])
+					#put_price = float(self.put_options[expiry][strike][0]['ask'])
+					call_theoretical_price = float(self.call_options[expiry][strike][0]['theoreticalOptionValue'])
+					call_theoretical_vol = float(self.call_options[expiry][strike][0]['theoreticalVolatility'])
+					#put_theoretical_price = float(self.put_options[expiry][strike][0]['theoreticalOptionValue'])
+					#put_theoretical_vol = float(self.put_options[expiry][strike][0]['theoreticalVolatility'])
+					self.create_option_record(description, latest_price, call_price, 'put_price', call_theoretical_vol, \
+						call_theoretical_price, 'put_theoretical_vol', 'put_theoretical_price', total_ratio)
 
-	def is_market_cap_mid_size(self):
-		if self.market_cap <= float(self.mid_cap_size):
-			return True
-		else:
-			return False
+	def create_option_record(self, description, latest_price, call_price, put_price, \
+		call_theoretical_vol, call_theoretical_price, put_theoretical_vol, put_theoretical_price, total_ratio):
+		"""Opens the document and werites info"""
+		f = open(self.document_name, "a+")
+		f.write("{} | {} | {} | {} | {} | {} | {} | {} | {} | {}\r".format(self.company.symbol, description, latest_price, \
+			call_price, put_price, call_theoretical_vol, call_theoretical_price, put_theoretical_vol, put_theoretical_price, total_ratio))
+		print("#####################################################Created record for {}".format(self.company.symbol, description))
+		f.close()
 
-	def is_price_at_least_X_percent_down(self):
-		if self.percent_down >= self.discount_from_jan:
-			return True
-		else:
-			return False
+class UnderpricedPutOptionsStrategy():
+	def __init__(self, company, market, threshold):
+		self.company = company
+		self.options_dict = self.company.get_options_dict()
+		#self.call_options = self.options_dict[0]
+		self.put_options = self.options_dict[1]
+		self.market = market
+		self.threshold = threshold
+		self.document_name = str(self.market) + '_underpriced_put_options.txt'
 
-	def is_company_target_at_least_X_percent_higher(self):
-		if self.target != 0:
-			if (self.target - self.latest_price) / self.target >= self.discount_from_target:
-				return True
-			else:
-				return False
-		else:
-			return False
+	def execute_strategy(self):
+		for expiry in self.put_options:
+			for strike in self.put_options[expiry]:
+				#call_ratio = float(self.call_options[expiry][strike][0]['ask']) / (float(self.call_options[expiry][strike][0]['ask']) + float(strike))
+				put_ratio = float(self.put_options[expiry][strike][0]['ask']) / (float(self.put_options[expiry][strike][0]['ask']) + float(strike))
+				total_ratio = put_ratio
+				if 0 < total_ratio <= threshold:
+					description = self.put_options[expiry][strike][0]['description']
+					latest_price = self.company.get_latest_price()
+					#call_price = float(self.call_options[expiry][strike][0]['ask'])
+					put_price = float(self.put_options[expiry][strike][0]['ask'])
+					#call_theoretical_price = float(self.call_options[expiry][strike][0]['theoreticalOptionValue'])
+					#call_theoretical_vol = float(self.call_options[expiry][strike][0]['theoreticalVolatility'])
+					put_theoretical_price = float(self.put_options[expiry][strike][0]['theoreticalOptionValue'])
+					put_theoretical_vol = float(self.put_options[expiry][strike][0]['theoreticalVolatility'])
+					self.create_option_record(description, latest_price, 'call_price', put_price, 'call_theoretical_vol', \
+						'call_theoretical_price', put_theoretical_vol, put_theoretical_price, total_ratio)
 
 	def create_option_record(self, description, latest_price, call_price, put_price, \
 		call_theoretical_vol, call_theoretical_price, put_theoretical_vol, put_theoretical_price, total_ratio):

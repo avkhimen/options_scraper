@@ -1,5 +1,6 @@
 import time
-from utility_classes import Company, Symbols, UnderpricedOptionsStrategy
+from utility_classes import Company, Symbols
+from utility_classes import UnderpricedOptionsStrategy, UnderpricedCallOptionsStrategy, UnderpricedPutOptionsStrategy
 from support_functions import get_input_args
 
 def main():
@@ -18,7 +19,15 @@ def main():
 		try:
 			if strategy_to_run == 'options':
 				sleep_time = 1
-				UnderpricedOptionsStrategy(company, market).test()
+				UnderpricedOptionsStrategy(company, market, threshold).execute_strategy()
+				time.sleep(sleep_time)
+			if strategy_to_run == 'call_options':
+				sleep_time = 1
+				UnderpricedCallOptionsStrategy(company, market, threshold).execute_strategy()
+				time.sleep(sleep_time)
+			if strategy_to_run == 'put_options':
+				sleep_time = 1
+				UnderpricedPutOptionsStrategy(company, market, threshold).execute_strategy()
 				time.sleep(sleep_time)
 		except Exception as e:
 			print(e)
