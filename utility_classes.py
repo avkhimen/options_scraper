@@ -202,7 +202,7 @@ class UnderpricedOptionsStrategy():
 				call_ratio = float(self.call_options[expiry][strike][0]['ask']) / (float(self.call_options[expiry][strike][0]['ask']) + float(strike))
 				put_ratio = float(self.put_options[expiry][strike][0]['ask']) / (float(self.put_options[expiry][strike][0]['ask']) + float(strike))
 				total_ratio = call_ratio + put_ratio
-				if 0 < total_ratio <= threshold:
+				if 0 < total_ratio <= self.threshold:
 					description = self.call_options[expiry][strike][0]['description']
 					latest_price = self.company.get_latest_price()
 					call_price = float(self.call_options[expiry][strike][0]['ask'])
@@ -239,7 +239,7 @@ class UnderpricedCallOptionsStrategy():
 				call_ratio = float(self.call_options[expiry][strike][0]['ask']) / (float(self.call_options[expiry][strike][0]['ask']) + float(strike))
 				#put_ratio = float(self.put_options[expiry][strike][0]['ask']) / (float(self.put_options[expiry][strike][0]['ask']) + float(strike))
 				total_ratio = call_ratio# + put_ratio
-				if 0 < total_ratio <= threshold:
+				if 0 < total_ratio <= self.threshold:
 					description = self.call_options[expiry][strike][0]['description']
 					latest_price = self.company.get_latest_price()
 					call_price = float(self.call_options[expiry][strike][0]['ask'])
@@ -276,7 +276,7 @@ class UnderpricedPutOptionsStrategy():
 				#call_ratio = float(self.call_options[expiry][strike][0]['ask']) / (float(self.call_options[expiry][strike][0]['ask']) + float(strike))
 				put_ratio = float(self.put_options[expiry][strike][0]['ask']) / (float(self.put_options[expiry][strike][0]['ask']) + float(strike))
 				total_ratio = put_ratio
-				if 0 < total_ratio <= threshold:
+				if 0 < total_ratio <= self.threshold:
 					description = self.put_options[expiry][strike][0]['description']
 					latest_price = self.company.get_latest_price()
 					#call_price = float(self.call_options[expiry][strike][0]['ask'])
